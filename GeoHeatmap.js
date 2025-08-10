@@ -61,6 +61,10 @@
     // Format is {"15213": 25, "15232": 10} where "15213" is zipcode and 25 is value
     var zipcode_metadata = settings["zipcode_metadata"];
 
+    // The property name in GeoJSON features to use as the identifier
+    // Default to "ZCTA5CE10" for backward compatibility, but can be overridden
+    var feature_id_property = settings["feature_id_property"] || "ZCTA5CE10";
+
     // The function for generating html layout for the info window
     var info_window_html_layout = settings["info_window_html_layout"];
 
@@ -182,7 +186,7 @@
       var zipcode_bound_geoJson_features = [];
       for (var i = 0; i < zipcode_bound_geoJson["features"].length; i++) {
         var f = zipcode_bound_geoJson["features"][i];
-        var zipcode = f["properties"]["ZCTA5CE10"];
+        var zipcode = f["properties"][feature_id_property];
         var fill_color = color_single;
         var metadata, opacity;
         // If no metadata json, use default values
@@ -222,16 +226,16 @@
 
       // Add default style
       google_map_data.setStyle(function (feature) {
-        var zipcode = feature.getProperty("ZCTA5CE10");
+        var zipcode = feature.getProperty(feature_id_property);
         return zipcode_styles[zipcode];
       });
 
       // If a zipcode region is highlighted before, highlight the updated one
       if (typeof highlighted_feature !== "undefined") {
-        var previous_highlighted_zipcode = highlighted_feature.getProperty("ZCTA5CE10");
+        var previous_highlighted_zipcode = highlighted_feature.getProperty(feature_id_property);
         for (var i = 0; i < features.length; i++) {
           f = features[i];
-          if (f.getProperty("ZCTA5CE10") === previous_highlighted_zipcode) {
+          if (f.getProperty(feature_id_property) === previous_highlighted_zipcode) {
             highlightZipcode({
               feature: f
             });
@@ -247,13 +251,13 @@
         });
         info_window.addListener("domready", function () {
           if (typeof info_window_domready_callback === "function") {
-            info_window_domready_callback(this["zipcode"]);
+            info_window_domready_callback(this[feature_id_property]);
           }
         });
         info_window.addListener("closeclick", function () {
           unhighlightZipcode();
           if (typeof info_window_closeclick_callback === "function") {
-            info_window_closeclick_callback(this["zipcode"]);
+            info_window_closeclick_callback(this[feature_id_property]);
           }
         });
       }
@@ -262,7 +266,7 @@
       google_map_data.addListener("click", function (event) {
         highlightZipcode(event);
 
-        var zipcode = event.feature.getProperty("ZCTA5CE10");
+        var zipcode = event.feature.getProperty(feature_id_property);
         var html;
         if (typeof info_window_html_layout === "function") {
           html = info_window_html_layout(zipcode);
@@ -272,7 +276,7 @@
 
         var bc = zipcode_bound_info[zipcode];
         var c = new google.maps.LatLng(bc[5], bc[4]);
-        info_window["zipcode"] = zipcode;
+        info_window[feature_id_property] = zipcode;
         info_window.setContent(html);
         info_window.setPosition(c);
         info_window.open(google_map);
@@ -282,11 +286,11 @@
       // Call revertStyle() to remove all overrides.
       // This will use the style rules defined in the function passed to setStyle()
       google_map_data.addListener("mouseover", function (event) {
-        var zipcode = event.feature.getProperty("ZCTA5CE10");
+        var zipcode = event.feature.getProperty(feature_id_property);
         var highlighted_zipcode;
 
         if (typeof highlighted_feature !== "undefined") {
-          highlighted_zipcode = highlighted_feature.getProperty("ZCTA5CE10");
+          highlighted_zipcode = highlighted_feature.getProperty(feature_id_property);
         }
 
         if (zipcode !== highlighted_zipcode) {
@@ -305,11 +309,11 @@
 
       // Set mouseout event
       google_map_data.addListener("mouseout", function (event) {
-        var zipcode = event.feature.getProperty("ZCTA5CE10");
+        var zipcode = event.feature.getProperty(feature_id_property);
         var highlighted_zipcode;
 
         if (typeof highlighted_feature !== "undefined") {
-          highlighted_zipcode = highlighted_feature.getProperty("ZCTA5CE10");
+          highlighted_zipcode = highlighted_feature.getProperty(feature_id_property);
         }
 
         if (zipcode !== highlighted_zipcode) {
@@ -332,7 +336,7 @@
       var html = "";
       html += "<table>";
       html += "  <tr>";
-      html += "    <td>Zipcode: " + zipcode + "</td>";
+      html += "    <td>Region: " + zipcode + "</td>";
       html += "  </tr>";
       if (typeof zipcode_metadata !== "undefined") {
         html += "  <tr>";
@@ -438,7 +442,7 @@
     }
 
     function highlightZipcode(event, zoom) {
-      var zipcode = event.feature.getProperty("ZCTA5CE10");
+      var zipcode = event.feature.getProperty(feature_id_property);
 
       if (zoom === true) {
         // Update current view when a GeoJSON polygon is clicked

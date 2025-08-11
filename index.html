@@ -547,13 +547,13 @@
                         createWholeCBDChart(globalApiData, startYear, endYear);
                         document.getElementById('chart-title').textContent = `Whole Melbourne CBD population trend (${startYear}-${endYear})`;
                     } else if (selectedRegion) {
-                        // 如果选中具体地区
+                        // if a region is selected
                         const regionData = globalApiData.find(region => region.sa2_name === selectedRegion);
                         if (regionData) {
                             createRegionYearRangeChart(selectedRegion, regionData, startYear, endYear);
                         }
                     } else {
-                        // 如果未选中地区，显示所有地区对比
+                        // if no region selected, show data of all regions
                         createYearRangeChart(startYear, endYear);
                     }
                 } else if (startYear > endYear) {
@@ -605,7 +605,7 @@
             select.addEventListener('change', function () {
                 const selectedRegion = this.value;
                 if (selectedRegion) {
-                    // 清空时间选择，恢复默认
+                    // restore default time 
                     document.getElementById('start-year-select').value = '2001';
                     document.getElementById('end-year-select').value = '2021';
                     if (selectedRegion === 'whole_cbd') {
@@ -1208,7 +1208,7 @@
                 years.push(year);
                 populations.push(sum);
             }
-            // 画图
+            // generate chart
             let datasetConfig = {
                 label: 'Whole Melbourne CBD Population',
                 data: populations,

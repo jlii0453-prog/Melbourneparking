@@ -318,7 +318,7 @@
             <div class="control-panel">
                 <label for="region-select">Select Region:</label>
                 <select id="region-select">
-                    <option value="">Select region</option>
+                    <option value="whole_cbd" selected>Whole Melbourne CBD</option>
                 </select>
 
                 <!-- Chart Type Selector -->
@@ -543,14 +543,17 @@
                 const selectedRegion = document.getElementById('region-select').value;
 
                 if (startYear && endYear && startYear <= endYear) {
-                    if (selectedRegion) {
-                        // If region is selected, show region's population trend for the year range
+                    if (selectedRegion === 'whole_cbd') {
+                        createWholeCBDChart(globalApiData, startYear, endYear);
+                        document.getElementById('chart-title').textContent = `Whole Melbourne CBD population trend (${startYear}-${endYear})`;
+                    } else if (selectedRegion) {
+                        // 如果选中具体地区
                         const regionData = globalApiData.find(region => region.sa2_name === selectedRegion);
                         if (regionData) {
                             createRegionYearRangeChart(selectedRegion, regionData, startYear, endYear);
                         }
                     } else {
-                        // If no region selected, show all regions comparison for the year range
+                        // 如果未选中地区，显示所有地区对比
                         createYearRangeChart(startYear, endYear);
                     }
                 } else if (startYear > endYear) {
@@ -602,14 +605,18 @@
             select.addEventListener('change', function () {
                 const selectedRegion = this.value;
                 if (selectedRegion) {
-                    // Clear year selection
+                    // 清空时间选择，恢复默认
                     document.getElementById('start-year-select').value = '2001';
                     document.getElementById('end-year-select').value = '2021';
-                    const regionData = apiData.find(region => region.sa2_name === selectedRegion);
-                    if (regionData) {
-                        createChart(selectedRegion, regionData);
-                        // Update chart title
-                        document.getElementById('chart-title').textContent = `${selectedRegion} Population Growth Trend (2001-2021)`;
+                    if (selectedRegion === 'whole_cbd') {
+                        createWholeCBDChart(apiData, 2001, 2021);
+                        document.getElementById('chart-title').textContent = `Whole Melbourne CBD population trend (2001-2021)`;
+                    } else {
+                        const regionData = apiData.find(region => region.sa2_name === selectedRegion);
+                        if (regionData) {
+                            createChart(selectedRegion, regionData);
+                            document.getElementById('chart-title').textContent = `${selectedRegion} Population Growth Trend (2001-2021)`;
+                        }
                     }
                 }
             });
@@ -1010,7 +1017,7 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Population',
+                            text: 'Population (number of person)',
                             font: { weight: 'bold' },
                             color: '#333'
                         },
@@ -1019,7 +1026,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'Regions',
+                            text: 'Year',
                             font: { weight: 'bold' },
                             color: '#333'
                         },
@@ -1169,6 +1176,74 @@
             infoWindow.setContent(content);
             infoWindow.setPosition(polygon.getPath().getArray()[0]);
             infoWindow.open(map);
+        }
+
+        // Create Whole Melbourne CBD chart
+        function createWholeCBDChart(apiData, startYear = 2001, endYear = 2021) {
+            const cbdRegions = [
+                'Carlton',
+                'Docklands',
+                'East Melbourne',
+                'Kensington (Vic.)',
+                'Parkville',
+                'South Yarra - West',
+                'Melbourne CBD - East',
+                'Melbourne CBD - North',
+                'Melbourne CBD - West',
+                'Royal Botanic Gardens Victoria',
+                'Southbank (West) - South Wharf',
+                'Southbank - East',
+                'West Melbourne - Residential'
+            ];
+            const years = [];
+            const populations = [];
+            for (let year = startYear; year <= endYear; year++) {
+                let sum = 0;
+                cbdRegions.forEach(regionName => {
+                    const region = apiData.find(r => r.sa2_name === regionName);
+                    if (region && region[`y${year}`] !== undefined) {
+                        sum += region[`y${year}`];
+                    }
+                });
+                years.push(year);
+                populations.push(sum);
+            }
+            // 画图
+            let datasetConfig = {
+                label: 'Whole Melbourne CBD Population',
+                data: populations,
+                borderColor: 'rgba(75, 192, 75, 1)',
+                backgroundColor: 'rgba(75, 192, 75, 0.8)',
+                tension: 0.4,
+                fill: currentChartType === 'line',
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false
+            };
+            if (currentChartType === 'pie') {
+                datasetConfig.backgroundColor = generatePieColors(years.length);
+                datasetConfig.borderWidth = 2;
+                datasetConfig.borderColor = '#fff';
+            } else if (currentChartType === 'radar') {
+                datasetConfig.backgroundColor = 'rgba(75, 192, 75, 0.2)';
+                datasetConfig.pointBackgroundColor = 'rgba(75, 192, 75, 1)';
+                datasetConfig.pointBorderColor = '#fff';
+                datasetConfig.pointHoverBackgroundColor = '#fff';
+                datasetConfig.pointHoverBorderColor = 'rgba(75, 192, 75, 1)';
+            } else if (currentChartType === 'line') {
+                datasetConfig.backgroundColor = 'rgba(75, 192, 75, 0.1)';
+            }
+            const chartConfig = {
+                type: currentChartType,
+                data: {
+                    labels: years,
+                    datasets: [datasetConfig]
+                },
+                options: getChartOptions(currentChartType)
+            };
+            lastChartData = [apiData, startYear, endYear];
+            lastChartFunction = createWholeCBDChart;
+            renderChart(chartConfig);
         }
 
         // Initialize after page loads

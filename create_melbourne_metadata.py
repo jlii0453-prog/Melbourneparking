@@ -5,13 +5,32 @@
 """
 
 import json
+import requests
+import os
+
+API_URL = os.getenv("POP_API_URL", "https://vic-population-api.onrender.com/melbourne-city")
+LOCAL_JSON = "melbourne_api_data.json"
 
 def load_api_data():
-    """加载API数据"""
-    with open('melbourne_api_data.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    return data
+    """
+    优先从在线 API 获取数据；失败时回退到本地 melbourne_api_data.json
+    期望 API 返回的每条记录含字段：
+    sa2_name, area_km2, y2001...y2021
+    """
+    print(f"[INFO] 拉取 API: {API_URL}")
+    r = requests.get(API_URL, timeout=20)
+    r.raise_for_status()
+    data = r.json()
 
+    if not data or "sa2_name" not in data[0]:
+        raise ValueError("API 返回结构不含 'sa2_name'")
+
+    with open(LOCAL_JSON, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"[INFO] 已写入 {LOCAL_JSON}，记录数: {len(data)}")
+
+    return data
+    
 def create_metadata_from_latest_year(api_data):
     """使用最新年份的人口数据创建元数据"""
     print("=== 创建人口元数据 ===")
@@ -151,7 +170,12 @@ def main():
     print("开始处理墨尔本API数据...")
     
     # 1. 加载API数据
-    api_data = load_api_data()
+    try:
+        api_data = load_api_data()  # 会拉 API 并更新 melbourne_api_data.json
+    except Exception as e:
+        print(f"[WARN] API 拉取失败，将回退到本地文件。原因: {e}")
+        with open(LOCAL_JSON, 'r', encoding='utf-8') as f:
+            api_data = json.load(f)
     print(f"加载了 {len(api_data)} 个SA2区域的API数据")
     
     # 2. 加载边界数据

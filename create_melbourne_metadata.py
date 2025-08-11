@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-创建墨尔本元数据文件
-将API数据转换为zipcode_metadata.json的格式
+Create Melbourne metadata files
+Convert API data into the format of zipcode_metadata.json
 """
 
 import json
@@ -13,35 +13,35 @@ LOCAL_JSON = "melbourne_api_data.json"
 
 def load_api_data():
     """
-    优先从在线 API 获取数据；失败时回退到本地 melbourne_api_data.json
-    期望 API 返回的每条记录含字段：
+    Prefer to fetch data from the online API; fallback to local melbourne_api_data.json if failed
+    Expected API returns each record containing fields:
     sa2_name, area_km2, y2001...y2021
     """
-    print(f"[INFO] 拉取 API: {API_URL}")
+    print(f"[INFO] Fetching API: {API_URL}")
     r = requests.get(API_URL, timeout=20)
     r.raise_for_status()
     data = r.json()
 
     if not data or "sa2_name" not in data[0]:
-        raise ValueError("API 返回结构不含 'sa2_name'")
+        raise ValueError("API response structure does not contain 'sa2_name'")
 
     with open(LOCAL_JSON, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f"[INFO] 已写入 {LOCAL_JSON}，记录数: {len(data)}")
+    print(f"[INFO] Written to {LOCAL_JSON}, records: {len(data)}")
 
     return data
     
 def create_metadata_from_latest_year(api_data):
-    """使用最新年份的人口数据创建元数据"""
-    print("=== 创建人口元数据 ===")
+    """Create metadata using the latest year's population data"""
+    print("=== Creating population metadata ===")
     
     metadata = {}
     
-    # 找到最新的年份列
+    # Find the latest year column
     year_columns = [col for col in api_data[0].keys() if col.startswith('y')]
     latest_year = max(year_columns)
     
-    print(f"使用 {latest_year} 年的人口数据")
+    print(f"Using population data from year {latest_year}")
     
     for region in api_data:
         sa2_name = region['sa2_name']
@@ -49,22 +49,22 @@ def create_metadata_from_latest_year(api_data):
         
         metadata[sa2_name] = population
     
-    # 保存元数据文件
+    # Save metadata file
     with open('melbourne_population_metadata.json', 'w', encoding='utf-8') as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
     
-    print(f"人口元数据已保存，包含 {len(metadata)} 个SA2区域")
-    print(f"人口范围: {min(metadata.values())} - {max(metadata.values())} 人")
+    print(f"Population metadata saved, contains {len(metadata)} SA2 regions")
+    print(f"Population range: {min(metadata.values())} - {max(metadata.values())} people")
     
     return metadata
 
 def create_density_metadata(api_data):
-    """创建人口密度元数据"""
-    print("\n=== 创建人口密度元数据 ===")
+    """Create population density metadata"""
+    print("\n=== Creating population density metadata ===")
     
     metadata = {}
     
-    # 找到最新的年份列
+    # Find the latest year column
     year_columns = [col for col in api_data[0].keys() if col.startswith('y')]
     latest_year = max(year_columns)
     
@@ -73,7 +73,7 @@ def create_density_metadata(api_data):
         population = region[latest_year]
         area_km2 = region['area_km2']
         
-        # 计算人口密度 (人/平方公里)
+        # Calculate population density (people/km²)
         if area_km2 > 0:
             density = population / area_km2
         else:
@@ -81,56 +81,56 @@ def create_density_metadata(api_data):
         
         metadata[sa2_name] = round(density, 2)
     
-    # 保存密度元数据文件
+    # Save density metadata file
     with open('melbourne_density_metadata.json', 'w', encoding='utf-8') as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
     
-    print(f"密度元数据已保存，包含 {len(metadata)} 个SA2区域")
-    print(f"密度范围: {min(metadata.values())} - {max(metadata.values())} 人/km²")
+    print(f"Density metadata saved, contains {len(metadata)} SA2 regions")
+    print(f"Density range: {min(metadata.values())} - {max(metadata.values())} people/km²")
     
     return metadata
 
 def analyze_data_coverage(api_data, bounds_data):
-    """分析数据覆盖情况"""
-    print("\n=== 数据覆盖分析 ===")
+    """Analyze data coverage"""
+    print("\n=== Data coverage analysis ===")
     
-    # API中的SA2名称
+    # SA2 names in API
     api_sa2_names = set(region['sa2_name'] for region in api_data)
     
-    # Shapefile中的SA2名称
+    # SA2 names in Shapefile
     shapefile_sa2_names = set(bounds_data['data'].keys())
     
-    # 交集
+    # Intersection
     common_names = api_sa2_names.intersection(shapefile_sa2_names)
     
-    # 差集
+    # Differences
     api_only = api_sa2_names - shapefile_sa2_names
     shapefile_only = shapefile_sa2_names - api_sa2_names
     
-    print(f"API数据SA2数量: {len(api_sa2_names)}")
-    print(f"Shapefile SA2数量: {len(shapefile_sa2_names)}")
-    print(f"匹配的SA2数量: {len(common_names)}")
-    print(f"只在API中的SA2: {len(api_only)}")
-    print(f"只在Shapefile中的SA2: {len(shapefile_only)}")
+    print(f"SA2 count in API data: {len(api_sa2_names)}")
+    print(f"SA2 count in Shapefile: {len(shapefile_sa2_names)}")
+    print(f"Matched SA2 count: {len(common_names)}")
+    print(f"SA2 only in API: {len(api_only)}")
+    print(f"SA2 only in Shapefile: {len(shapefile_only)}")
     
     if api_only:
-        print("\n只在API中的SA2示例:")
+        print("\nExamples of SA2 only in API:")
         for name in list(api_only)[:5]:
             print(f"  - {name}")
     
     if shapefile_only:
-        print("\n只在Shapefile中的SA2示例:")
+        print("\nExamples of SA2 only in Shapefile:")
         for name in list(shapefile_only)[:5]:
             print(f"  - {name}")
     
-    # 创建只包含匹配区域的元数据
+    # Create metadata containing only matched regions
     return common_names
 
 def create_matched_metadata(api_data, common_names):
-    """创建只包含匹配区域的元数据"""
-    print("\n=== 创建匹配的元数据 ===")
+    """Create metadata containing only matched regions"""
+    print("\n=== Creating matched metadata ===")
     
-    # 人口数据
+    # Population data
     population_metadata = {}
     density_metadata = {}
     
@@ -153,51 +153,51 @@ def create_matched_metadata(api_data, common_names):
             
             density_metadata[sa2_name] = round(density, 2)
     
-    # 保存匹配的元数据文件
+    # Save matched metadata files
     with open('zipcode_metadata.json', 'w', encoding='utf-8') as f:
         json.dump(population_metadata, f, indent=2, ensure_ascii=False)
     
     with open('melbourne_density_matched.json', 'w', encoding='utf-8') as f:
         json.dump(density_metadata, f, indent=2, ensure_ascii=False)
     
-    print(f"匹配的人口元数据已保存到 zipcode_metadata.json: {len(population_metadata)} 个区域")
-    print(f"匹配的密度元数据已保存到 melbourne_density_matched.json: {len(density_metadata)} 个区域")
+    print(f"Matched population metadata saved to zipcode_metadata.json: {len(population_metadata)} regions")
+    print(f"Matched density metadata saved to melbourne_density_matched.json: {len(density_metadata)} regions")
     
     return population_metadata, density_metadata
 
 def main():
-    """主函数"""
-    print("开始处理墨尔本API数据...")
+    """Main function"""
+    print("Starting to process Melbourne API data...")
     
-    # 1. 加载API数据
+    # 1. Load API data
     try:
-        api_data = load_api_data()  # 会拉 API 并更新 melbourne_api_data.json
+        api_data = load_api_data()  # Will fetch API and update melbourne_api_data.json
     except Exception as e:
-        print(f"[WARN] API 拉取失败，将回退到本地文件。原因: {e}")
+        print(f"[WARN] API fetch failed, falling back to local file. Reason: {e}")
         with open(LOCAL_JSON, 'r', encoding='utf-8') as f:
             api_data = json.load(f)
-    print(f"加载了 {len(api_data)} 个SA2区域的API数据")
+    print(f"Loaded {len(api_data)} SA2 regions from API data")
     
-    # 2. 加载边界数据
+    # 2. Load boundary data
     with open('melbourne_sa2_bounds_info.json', 'r', encoding='utf-8') as f:
         bounds_data = json.load(f)
     
-    # 3. 分析数据覆盖
+    # 3. Analyze data coverage
     common_names = analyze_data_coverage(api_data, bounds_data)
     
-    # 4. 创建匹配的元数据
+    # 4. Create matched metadata
     population_metadata, density_metadata = create_matched_metadata(api_data, common_names)
     
-    # 5. 也创建完整的元数据供参考
+    # 5. Also create complete metadata for reference
     create_metadata_from_latest_year(api_data)
     create_density_metadata(api_data)
     
-    print("\n=== 处理完成 ===")
-    print("生成的文件:")
-    print("  - zipcode_metadata.json (匹配的人口数据)")
-    print("  - melbourne_density_matched.json (匹配的密度数据)")
-    print("  - melbourne_population_metadata.json (完整人口数据)")
-    print("  - melbourne_density_metadata.json (完整密度数据)")
+    print("\n=== Processing completed ===")
+    print("Generated files:")
+    print("  - zipcode_metadata.json (matched population data)")
+    print("  - melbourne_density_matched.json (matched density data)")
+    print("  - melbourne_population_metadata.json (full population data)")
+    print("  - melbourne_density_metadata.json (full density data)")
 
 if __name__ == "__main__":
     main()

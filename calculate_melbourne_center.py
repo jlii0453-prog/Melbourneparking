@@ -1,56 +1,56 @@
 #!/usr/bin/env python3
 """
-计算墨尔本地图的最佳中心点和缩放级别
+Calculate the optimal center point and zoom level for the Melbourne map
 """
 
 import json
 import math
 
 def calculate_center_and_bounds():
-    """计算墨尔本数据的地理中心和边界"""
+    """Calculate the geographic center and boundaries of Melbourne data"""
     
-    # 读取边界信息
+    # Read boundary information
     with open('zipcode_bound_info.json', 'r', encoding='utf-8') as f:
         bounds_data = json.load(f)
     
     regions = bounds_data['data']
     
-    print(f"分析 {len(regions)} 个墨尔本SA2区域...")
+    print(f"Analyzing {len(regions)} Melbourne SA2 regions...")
     
-    # 收集所有边界点
+    # Collect all boundary points
     all_lngs = []
     all_lats = []
     
     for region_name, bounds in regions.items():
-        # bounds格式: [min_lng, min_lat, max_lng, max_lat, center_lng, center_lat]
+        # bounds format: [min_lng, min_lat, max_lng, max_lat, center_lng, center_lat]
         min_lng, min_lat, max_lng, max_lat, center_lng, center_lat = bounds
         
         all_lngs.extend([min_lng, max_lng])
         all_lats.extend([min_lat, max_lat])
     
-    # 计算整体边界
+    # Calculate overall boundary
     overall_min_lng = min(all_lngs)
     overall_max_lng = max(all_lngs)
     overall_min_lat = min(all_lats)
     overall_max_lat = max(all_lats)
     
-    # 计算中心点
+    # Calculate center point
     center_lng = (overall_min_lng + overall_max_lng) / 2
     center_lat = (overall_min_lat + overall_max_lat) / 2
     
-    # 计算跨度
+    # Calculate span
     lng_span = overall_max_lng - overall_min_lng
     lat_span = overall_max_lat - overall_min_lat
     
-    print("\n=== 地理边界分析 ===")
-    print(f"经度范围: {overall_min_lng:.6f} 到 {overall_max_lng:.6f}")
-    print(f"纬度范围: {overall_min_lat:.6f} 到 {overall_max_lat:.6f}")
-    print(f"经度跨度: {lng_span:.6f}°")
-    print(f"纬度跨度: {lat_span:.6f}°")
-    print(f"建议中心点: ({center_lat:.6f}, {center_lng:.6f})")
+    print("\n=== Geographic Boundary Analysis ===")
+    print(f"Longitude range: {overall_min_lng:.6f} to {overall_max_lng:.6f}")
+    print(f"Latitude range: {overall_min_lat:.6f} to {overall_max_lat:.6f}")
+    print(f"Longitude span: {lng_span:.6f}°")
+    print(f"Latitude span: {lat_span:.6f}°")
+    print(f"Suggested center point: ({center_lat:.6f}, {center_lng:.6f})")
     
-    # 根据跨度估算合适的缩放级别
-    # Google Maps缩放级别估算公式
+    # Estimate appropriate zoom level based on span
+    # Google Maps zoom level estimation formula
     max_span = max(lng_span, lat_span)
     
     if max_span > 10:
@@ -70,34 +70,34 @@ def calculate_center_and_bounds():
     else:
         zoom = 15
     
-    print(f"建议缩放级别: {zoom}")
+    print(f"Suggested zoom level: {zoom}")
     
     return center_lat, center_lng, zoom
 
 def show_region_examples():
-    """显示一些区域示例"""
+    """Show some region examples"""
     with open('zipcode_metadata.json', 'r', encoding='utf-8') as f:
         metadata = json.load(f)
     
-    print("\n=== 包含的墨尔本区域 ===")
+    print("\n=== Included Melbourne Regions ===")
     for region_name, population in metadata.items():
-        print(f"  - {region_name}: {population:,} 人")
+        print(f"  - {region_name}: {population:,} people")
 
 def main():
-    """主函数"""
-    print("计算墨尔本地图配置...")
+    """Main function"""
+    print("Calculating Melbourne map configuration...")
     
-    # 显示区域信息
+    # Show region information
     show_region_examples()
     
-    # 计算中心点和缩放级别
+    # Calculate center point and zoom level
     center_lat, center_lng, zoom = calculate_center_and_bounds()
     
-    print(f"\n=== 推荐的地图配置 ===")
-    print(f"中心点: {{lat: {center_lat:.6f}, lng: {center_lng:.6f}}}")
-    print(f"缩放级别: {zoom}")
+    print(f"\n=== Recommended Map Configuration ===")
+    print(f"Center point: {{lat: {center_lat:.6f}, lng: {center_lng:.6f}}}")
+    print(f"Zoom level: {zoom}")
     
-    print(f"\n=== 代码配置 ===")
+    print(f"\n=== Code Configuration ===")
     print(f"init_map_center: {{lat: {center_lat:.6f}, lng: {center_lng:.6f}}}")
     print(f"init_map_zoom: {zoom}")
 

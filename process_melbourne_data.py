@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-处理墨尔本SA2数据
-将Shapefile转换为GeoJSON并过滤墨尔本地区
+Process Melbourne SA2 data
+Convert Shapefile to GeoJSON and filter the Melbourne area
 """
 
 import geopandas as gpd
@@ -9,50 +9,50 @@ import json
 import requests
 
 def load_sa2_data():
-    """加载SA2 Shapefile数据"""
-    print("正在加载SA2 Shapefile...")
+    """Load SA2 Shapefile data"""
+    print("Loading SA2 Shapefile...")
     shapefile_path = r"D:\student\zfan_project\案例\resource\SA2_2021_AUST_SHP_GDA2020\SA2_2021_AUST_GDA2020.shp"
     
-    # 读取Shapefile
+    # Read Shapefile
     gdf = gpd.read_file(shapefile_path)
     
-    print(f"总共加载了 {len(gdf)} 个SA2区域")
-    print("数据列名:", list(gdf.columns))
+    print(f"Loaded a total of {len(gdf)} SA2 regions")
+    print("Data column names:", list(gdf.columns))
     
     return gdf
 
 def explore_data(gdf):
-    """探索数据结构"""
-    print("\n=== 数据探索 ===")
-    print("前5行数据:")
+    """Explore data structure"""
+    print("\n=== Data exploration ===")
+    print("First 5 rows of data:")
     print(gdf.head())
     
-    print("\n唯一的大首都城市区域:")
+    print("\nUnique Greater Capital City areas:")
     if 'GCC_NAME21' in gdf.columns:
         gcc_names = gdf['GCC_NAME21'].unique()
         print(gcc_names)
     
-    print("\n墨尔本相关区域数量:")
+    print("\nNumber of Melbourne-related regions:")
     melbourne_filter = gdf['GCC_NAME21'] == 'Greater Melbourne'
     melbourne_count = melbourne_filter.sum()
-    print(f"大墨尔本地区有 {melbourne_count} 个SA2区域")
+    print(f"Greater Melbourne area has {melbourne_count} SA2 regions")
     
     return melbourne_filter
 
 def filter_melbourne_data(gdf, melbourne_filter):
-    """过滤墨尔本地区数据"""
-    print("\n=== 过滤墨尔本数据 ===")
+    """Filter Melbourne area data"""
+    print("\n=== Filtering Melbourne data ===")
     
-    # 过滤墨尔本地区
+    # Filter Melbourne area
     melbourne_gdf = gdf[melbourne_filter].copy()
     
-    # 转换坐标系到WGS84 (Google Maps使用的坐标系)
+    # Convert coordinate system to WGS84 (coordinate system used by Google Maps)
     melbourne_gdf = melbourne_gdf.to_crs('EPSG:4326')
     
-    print(f"过滤后保留 {len(melbourne_gdf)} 个墨尔本SA2区域")
+    print(f"After filtering, kept {len(melbourne_gdf)} Melbourne SA2 regions")
     
-    # 显示一些SA2名称示例
-    print("\n墨尔本SA2区域示例:")
+    # Show some SA2 name examples
+    print("\nSample Melbourne SA2 regions:")
     sa2_names = melbourne_gdf['SA2_NAME21'].head(10).tolist()
     for name in sa2_names:
         print(f"  - {name}")
@@ -60,23 +60,23 @@ def filter_melbourne_data(gdf, melbourne_filter):
     return melbourne_gdf
 
 def create_geojson(melbourne_gdf):
-    """创建GeoJSON文件"""
-    print("\n=== 创建GeoJSON ===")
+    """Create GeoJSON file"""
+    print("\n=== Creating GeoJSON ===")
     
-    # 转换为GeoJSON格式
+    # Convert to GeoJSON format
     geojson = melbourne_gdf.to_json()
     
-    # 保存GeoJSON文件
+    # Save GeoJSON file
     with open('melbourne_sa2_boundaries.json', 'w', encoding='utf-8') as f:
         f.write(geojson)
     
-    print("GeoJSON文件已保存为: melbourne_sa2_boundaries.json")
+    print("GeoJSON file saved as: melbourne_sa2_boundaries.json")
     
     return json.loads(geojson)
 
 def create_bounds_info(melbourne_gdf):
-    """创建边界信息文件（模拟zipcode_bound_info.json格式）"""
-    print("\n=== 创建边界信息 ===")
+    """Create boundary info file (simulate zipcode_bound_info.json format)"""
+    print("\n=== Creating boundary information ===")
     
     bounds_info = {"data": {}}
     
@@ -84,13 +84,13 @@ def create_bounds_info(melbourne_gdf):
         sa2_name = row['SA2_NAME21']
         geometry = row['geometry']
         
-        # 计算边界框
+        # Calculate bounding box
         bounds = geometry.bounds  # (minx, miny, maxx, maxy)
         
-        # 计算中心点
+        # Calculate centroid
         centroid = geometry.centroid
         
-        # 格式: [min_lng, min_lat, max_lng, max_lat, center_lng, center_lat]
+        # Format: [min_lng, min_lat, max_lng, max_lat, center_lng, center_lat]
         bounds_info["data"][sa2_name] = [
             bounds[0],  # min_lng
             bounds[1],  # min_lat  
@@ -100,71 +100,71 @@ def create_bounds_info(melbourne_gdf):
             centroid.y  # center_lat
         ]
     
-    # 保存边界信息文件
+    # Save boundary info file
     with open('melbourne_sa2_bounds_info.json', 'w', encoding='utf-8') as f:
         json.dump(bounds_info, f, indent=2, ensure_ascii=False)
     
-    print(f"边界信息文件已保存为: melbourne_sa2_bounds_info.json")
-    print(f"包含 {len(bounds_info['data'])} 个SA2区域的边界信息")
+    print(f"Boundary information file saved as: melbourne_sa2_bounds_info.json")
+    print(f"Contains boundary information for {len(bounds_info['data'])} SA2 regions")
     
     return bounds_info
 
 def fetch_melbourne_population_data():
-    """获取墨尔本人口数据"""
-    print("\n=== 获取人口数据 ===")
+    """Fetch Melbourne population data"""
+    print("\n=== Fetching population data ===")
     
     try:
-        # 获取墨尔本全部数据
+        # Get all Melbourne data
         url = 'https://vic-population-api.onrender.com/melbourne-city'
         response = requests.get(url, timeout=30)
         
         if response.status_code == 200:
             data = response.json()
-            print("成功获取API数据")
-            print(f"数据键值: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+            print("Successfully fetched API data")
+            print(f"Data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
             
-            # 保存原始API数据
+            # Save raw API data
             with open('melbourne_api_data.json', 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             
             return data
         else:
-            print(f"API请求失败: {response.status_code}")
+            print(f"API request failed: {response.status_code}")
             return None
             
     except Exception as e:
-        print(f"获取API数据时出错: {e}")
+        print(f"Error fetching API data: {e}")
         return None
 
 def main():
-    """主函数"""
-    print("开始处理墨尔本SA2数据...")
+    """Main function"""
+    print("Starting to process Melbourne SA2 data...")
     
-    # 1. 加载Shapefile数据
+    # 1. Load Shapefile data
     gdf = load_sa2_data()
     
-    # 2. 探索数据
+    # 2. Explore data
     melbourne_filter = explore_data(gdf)
     
-    # 3. 过滤墨尔本数据
+    # 3. Filter Melbourne data
     melbourne_gdf = filter_melbourne_data(gdf, melbourne_filter)
     
-    # 4. 创建GeoJSON
+    # 4. Create GeoJSON
     geojson_data = create_geojson(melbourne_gdf)
     
-    # 5. 创建边界信息
+    # 5. Create boundary information
     bounds_info = create_bounds_info(melbourne_gdf)
     
-    # 6. 获取人口数据
+    # 6. Fetch population data
     api_data = fetch_melbourne_population_data()
     
-    print("\n=== 处理完成 ===")
-    print("生成的文件:")
-    print("  - melbourne_sa2_boundaries.json (GeoJSON边界)")
-    print("  - melbourne_sa2_bounds_info.json (边界信息)")
-    print("  - melbourne_api_data.json (API人口数据)")
+    print("\n=== Processing completed ===")
+    print("Generated files:")
+    print("  - melbourne_sa2_boundaries.json (GeoJSON boundaries)")
+    print("  - melbourne_sa2_bounds_info.json (boundary information)")
+    print("  - melbourne_api_data.json (API population data)")
     
-    print("\n下一步: 将这些文件集成到网站中")
+    print("\nNext step: Integrate these files into the website")
 
 if __name__ == "__main__":
     main()

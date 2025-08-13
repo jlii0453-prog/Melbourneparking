@@ -247,9 +247,12 @@
                 padding: 15px;
             }
             
-            #legend {
+            .legend-container {
                 bottom: 15px;
                 left: 15px;
+            }
+            
+            #legend {
                 padding: 12px;
                 min-width: 180px;
             }
@@ -363,9 +366,12 @@
                 padding: 10px;
             }
             
-            #legend {
+            .legend-container {
                 bottom: 10px;
                 left: 10px;
+            }
+            
+            #legend {
                 padding: 10px;
                 min-width: 160px;
             }
@@ -486,9 +492,12 @@
                 padding: 8px;
             }
             
-            #legend {
+            .legend-container {
                 bottom: 8px;
                 left: 8px;
+            }
+            
+            #legend {
                 padding: 8px;
                 min-width: 140px;
             }
@@ -572,6 +581,11 @@
             
             .chart-container {
                 padding: 10px;
+            }
+            
+            .legend-container {
+                bottom: 15px;
+                left: 15px;
             }
         }
 
@@ -865,6 +879,19 @@
             min-width: 200px;
         }
 
+        /* Legend container - fixed to map */
+        .legend-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        /* Ensure map container has relative positioning for legend */
+        #map {
+            position: relative;
+        }
+
         #legend h3 {
             margin-bottom: 15px;
             color: #333;
@@ -940,7 +967,34 @@
     </a>
 
     <div class="container">
-        <div id="map"></div>
+        <div id="map">
+            <!-- Legend fixed to map container -->
+            <div class="legend-container">
+                <div id="legend">
+                    <h3>Population Density (people/km²)</h3>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f0f0f0;"></div>
+                        <div class="legend-label">No Data</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #00a511;"></div>
+                        <div class="legend-label">Low Density</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #fff200;"></div>
+                        <div class="legend-label">Medium Density</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ff6200;"></div>
+                        <div class="legend-label">High Density</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ff0000;"></div>
+                        <div class="legend-label">Highest Density</div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="chart-section">
             <div class="control-panel">
                 <label for="region-select">Select Region:</label>
@@ -977,30 +1031,6 @@
             <div class="chart-container">
                 <canvas id="population-chart"></canvas>
             </div>
-        </div>
-    </div>
-
-    <div id="legend">
-        <h3>Population Density (people/km²)</h3>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #f0f0f0;"></div>
-            <div class="legend-label">No Data</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #00a511;"></div>
-            <div class="legend-label">Low Density</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #fff200;"></div>
-            <div class="legend-label">Medium Density</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #ff6200;"></div>
-            <div class="legend-label">High Density</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: #ff0000;"></div>
-            <div class="legend-label">Highest Density</div>
         </div>
     </div>
 

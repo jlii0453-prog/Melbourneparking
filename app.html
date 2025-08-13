@@ -250,7 +250,7 @@
             .legend-container {
                 bottom: 15px;
                 left: 15px;
-                position: fixed;
+                position: absolute;
             }
             
             #legend {
@@ -370,7 +370,7 @@
             .legend-container {
                 bottom: 10px;
                 left: 10px;
-                position: fixed;
+                position: absolute;
             }
             
             #legend {
@@ -497,7 +497,7 @@
             .legend-container {
                 bottom: 8px;
                 left: 8px;
-                position: fixed;
+                position: absolute;
             }
             
             #legend {
@@ -589,7 +589,7 @@
             .legend-container {
                 bottom: 15px;
                 left: 15px;
-                position: fixed;
+                position: absolute;
             }
         }
 
@@ -883,17 +883,17 @@
             min-width: 200px;
         }
 
-        /* Legend container - fixed to page, not map */
+        /* Legend container - positioned relative to map container */
         .legend-container {
-            position: fixed;
+            position: absolute;
             bottom: 20px;
             left: 20px;
             z-index: 1000;
         }
 
-        /* Remove relative positioning from map */
+        /* Ensure map container has relative positioning for legend */
         #map {
-            /* position: relative; removed */
+            position: relative;
         }
 
         #legend h3 {

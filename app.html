@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>Melbourne CBD Population Density Heatmap</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #map {
+            width: 66.67%;
+            /* 2/3 width */
+            height: 100%;
+            background-color: #f0f0f0;
+        }
+
+        .chart-section {
+            width: 33.33%;
+            /* 1/3 width */
+            height: 100%;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-left: 1px solid #e9ecef;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-panel {
+            margin-bottom: 15px;
+            text-align: left;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .control-panel label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-panel select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            margin-bottom: 18px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        /* New: Chart type selector styles */
+        #chart-type-select {
+            margin-bottom: 5px;
+            /* Maintain spacing with other selectors */
+        }
+
+        /* Add scrollbar styles */
+        .chart-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chart-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .chart-section::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        /* Back button styles */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+            background: linear-gradient(45deg, #00b8e6, #ff5252);
+        }
+
+        .back-button:active {
+            transform: translateY(0);
+        }
+
+        .back-button .icon {
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-button:hover .icon {
+            transform: translateX(-3px);
+        }
+
+        /* Responsive back button */
+        @media (max-width: 768px) {
+            .back-button {
+                top: 15px;
+                left: 15px;
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+        }
+
+        .chart-section::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Comprehensive responsive design */
+        
+        /* Large tablets and small desktops */
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+
+            #map {
+                width: 100%;
+                height: 60vh;
+            }
+
+            .chart-section {
+                width: 100%;
+                height: 40vh;
+                padding: 20px;
+            }
+            
+            .control-panel {
+                padding: 15px;
+            }
+            
+            .year-filter {
+                padding: 15px;
+            }
+        }
+
+        /* Tablets */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            #map {
+                width: 100%;
+                height: 50vh;
+                min-height: 300px;
+            }
+
+            .chart-section {
+                width: 100%;
+                height: auto;
+                min-height: 50vh;
+                padding: 15px;
+            }
+            
+            .control-panel {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+            
+            .control-panel label {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+            
+            .control-panel select {
+                padding: 10px 12px;
+                font-size: 13px;
+                margin-bottom: 15px;
+            }
+            
+            .year-filter {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+            
+            .year-filter h4 {
+                font-size: 13px;
+            }
+            
+            .year-controls select {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            
+            .year-controls button {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            
+            .chart-title {
+                padding: 12px;
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+            
+            .chart-container {
+                padding: 15px;
+            }
+            
+            #legend {
+                bottom: 15px;
+                left: 15px;
+                padding: 12px;
+                min-width: 180px;
+            }
+            
+            #legend h3 {
+                font-size: 11px;
+                margin-bottom: 12px;
+            }
+            
+            .legend-item {
+                margin-bottom: 3px;
+            }
+            
+            .legend-color {
+                width: 18px;
+                height: 18px;
+                margin-right: 8px;
+            }
+            
+            .legend-label {
+                font-size: 11px;
+            }
+            
+            #info-panel {
+                top: 15px;
+                left: 15px;
+                padding: 12px;
+                max-width: 250px;
+            }
+            
+            #info-panel h4 {
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+            
+            .info-row {
+                margin-bottom: 4px;
+                font-size: 12px;
+            }
+        }
+
+        /* Mobile phones */
+        @media (max-width: 480px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            #map {
+                width: 100%;
+                height: 45vh;
+                min-height: 250px;
+            }
+
+            .chart-section {
+                width: 100%;
+                height: auto;
+                min-height: 55vh;
+                padding: 10px;
+            }
+            
+            .control-panel {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .control-panel label {
+                font-size: 12px;
+                margin-bottom: 5px;
+            }
+            
+            .control-panel select {
+                padding: 8px 10px;
+                font-size: 12px;
+                margin-bottom: 12px;
+            }
+            
+            .year-filter {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .year-filter h4 {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .year-controls {
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .year-controls select {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+            
+            .year-controls button {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .chart-title {
+                padding: 10px;
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+            
+            .chart-container {
+                padding: 10px;
+            }
+            
+            #legend {
+                bottom: 10px;
+                left: 10px;
+                padding: 10px;
+                min-width: 160px;
+            }
+            
+            #legend h3 {
+                font-size: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .legend-item {
+                margin-bottom: 2px;
+            }
+            
+            .legend-color {
+                width: 16px;
+                height: 16px;
+                margin-right: 6px;
+            }
+            
+            .legend-label {
+                font-size: 10px;
+            }
+            
+            #info-panel {
+                top: 10px;
+                left: 10px;
+                padding: 10px;
+                max-width: 200px;
+            }
+            
+            #info-panel h4 {
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+            
+            .info-row {
+                margin-bottom: 3px;
+                font-size: 11px;
+            }
+            
+            .back-button {
+                top: 10px;
+                left: 10px;
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 360px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            #map {
+                width: 100%;
+                height: 40vh;
+                min-height: 200px;
+            }
+
+            .chart-section {
+                width: 100%;
+                height: auto;
+                min-height: 60vh;
+                padding: 8px;
+            }
+            
+            .control-panel {
+                padding: 10px;
+                margin-bottom: 6px;
+            }
+            
+            .control-panel label {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            
+            .control-panel select {
+                padding: 6px 8px;
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+            
+            .year-filter {
+                padding: 10px;
+                margin-bottom: 6px;
+            }
+            
+            .year-filter h4 {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+            
+            .year-controls {
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            
+            .year-controls select {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+            
+            .year-controls button {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            
+            .chart-title {
+                padding: 8px;
+                font-size: 11px;
+                margin-bottom: 5px;
+            }
+            
+            .chart-container {
+                padding: 8px;
+            }
+            
+            #legend {
+                bottom: 8px;
+                left: 8px;
+                padding: 8px;
+                min-width: 140px;
+            }
+            
+            #legend h3 {
+                font-size: 9px;
+                margin-bottom: 8px;
+            }
+            
+            .legend-item {
+                margin-bottom: 2px;
+            }
+            
+            .legend-color {
+                width: 14px;
+                height: 14px;
+                margin-right: 5px;
+            }
+            
+            .legend-label {
+                font-size: 9px;
+            }
+            
+            #info-panel {
+                top: 8px;
+                left: 8px;
+                padding: 8px;
+                max-width: 180px;
+            }
+            
+            #info-panel h4 {
+                font-size: 11px;
+                margin-bottom: 5px;
+            }
+            
+            .info-row {
+                margin-bottom: 2px;
+                font-size: 10px;
+            }
+            
+            .back-button {
+                top: 8px;
+                left: 8px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+        }
+
+        /* Landscape orientation for mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container {
+                flex-direction: row;
+                height: 100vh;
+            }
+
+            #map {
+                width: 60%;
+                height: 100%;
+            }
+
+            .chart-section {
+                width: 40%;
+                height: 100%;
+                padding: 15px;
+            }
+            
+            .control-panel {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+            
+            .year-filter {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+            
+            .chart-title {
+                padding: 8px;
+                margin-bottom: 5px;
+            }
+            
+            .chart-container {
+                padding: 10px;
+            }
+        }
+
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .control-panel select,
+            .year-controls select,
+            .year-controls button {
+                border-width: 1px;
+            }
+            
+            .chart-container {
+                border-width: 1px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .back-button,
+            #legend,
+            #info-panel,
+            .loading {
+                display: none !important;
+            }
+            
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            #map {
+                width: 100%;
+                height: 400px;
+                page-break-inside: avoid;
+            }
+            
+            .chart-section {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .control-panel select,
+            .year-controls select,
+            .year-controls button {
+                min-height: 44px; /* iOS recommended touch target size */
+            }
+            
+            .back-button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            #legend,
+            #info-panel {
+                min-height: 44px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .control-panel,
+            .year-filter,
+            .chart-title,
+            .chart-container {
+                background: #2d3748;
+                color: #e2e8f0;
+                border-color: #4a5568;
+            }
+            
+            .control-panel label,
+            .year-filter h4,
+            .chart-title {
+                color: #e2e8f0;
+            }
+            
+            .control-panel select,
+            .year-controls select {
+                background: #4a5568;
+                color: #e2e8f0;
+                border-color: #718096;
+            }
+            
+            .year-controls button {
+                background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            }
+            
+            #legend,
+            #info-panel {
+                background: #2d3748;
+                color: #e2e8f0;
+                border-color: #4a5568;
+            }
+            
+            #legend h3,
+            #info-panel h4 {
+                color: #e2e8f0;
+            }
+            
+            .legend-label,
+            .info-label {
+                color: #cbd5e0;
+            }
+        }
+
+        /* Reduced motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            .control-panel select,
+            .year-controls select,
+            .year-controls button,
+            .back-button {
+                transition: none;
+            }
+            
+            .control-panel select:focus,
+            .year-controls select:focus,
+            .year-controls button:hover {
+                transform: none;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .control-panel select:focus,
+        .year-controls select:focus,
+        .year-controls button:focus,
+        .back-button:focus {
+            outline: 2px solid #3182ce;
+            outline-offset: 2px;
+        }
+
+        /* Loading state improvements */
+        .loading {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            font-size: 16px;
+            color: #2d3748;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading div:first-child {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading div:last-child {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        /* Chart responsiveness improvements */
+        .chart-container canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        /* Smooth scrolling for mobile */
+        .chart-section {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        .control-panel select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .year-filter {
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .year-filter h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .year-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .year-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .year-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .year-controls select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+            margin-bottom: 0;
+        }
+
+        .year-controls button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .year-controls button:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .year-controls button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            min-height: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .chart-container {
+            flex: 1;
+            margin: 0 auto;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        #legend h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .legend-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-width: 300px;
+            display: none;
+        }
+
+        #info-panel h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .info-row {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Back button -->
+    <a href="index.html" class="back-button">
+        <span class="icon">←</span>
+        <span>Back to Home</span>
+    </a>
+
+    <div class="container">
+        <div id="map"></div>
+        <div class="chart-section">
+            <div class="control-panel">
+                <label for="region-select">Select Region:</label>
+                <select id="region-select">
+                    <option value="whole_cbd" selected>Whole Melbourne CBD</option>
+                </select>
+
+                <!-- Chart Type Selector -->
+                <label for="chart-type-select">Chart Type:</label>
+                <select id="chart-type-select">
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                </select>
+            </div>
+            <div class="year-filter">
+                <h4>Year Range Filter</h4>
+                <div class="year-controls">
+                    <div class="year-input-group">
+                        <label for="start-year-select">Start Year:</label>
+                        <select id="start-year-select">
+                            <option value="2001">2001</option>
+                        </select>
+                    </div>
+                    <div class="year-input-group">
+                        <label for="end-year-select">End Year:</label>
+                        <select id="end-year-select">
+                            <option value="2021">2021</option>
+                        </select>
+                    </div>
+                    <button id="filter-button">Filter</button>
+                </div>
+            </div>
+            <div class="chart-title" id="chart-title">Select a region or year to view population data</div>
+            <div class="chart-container">
+                <canvas id="population-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="legend">
+        <h3>Population Density (people/km²)</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #f0f0f0;"></div>
+            <div class="legend-label">No Data</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #00a511;"></div>
+            <div class="legend-label">Low Density</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #fff200;"></div>
+            <div class="legend-label">Medium Density</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ff6200;"></div>
+            <div class="legend-label">High Density</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ff0000;"></div>
+            <div class="legend-label">Highest Density</div>
+        </div>
+    </div>
+
+    <div id="info-panel">
+        <h4>Region Information</h4>
+        <div class="info-row">
+            <span class="info-label">Region Name:</span>
+            <span id="region-name">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Population:</span>
+            <span id="population">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Area:</span>
+            <span id="area">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Population Density:</span>
+            <span id="density">-</span>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">
+        <div>Loading Melbourne CBD population density data...</div>
+        <div style="margin-top: 10px; font-size: 12px; color: #666;">Please wait</div>
+    </div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDTe1VVhr2KeikeokuNh7QTEZaGCjp1Afo"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global variables
+        let map;
+        let populationData = {};
+        let sa2Boundaries = {};
+        let sa2GeoJSON = null;
+        let infoWindow;
+        let currentChart = null;
+        let globalApiData = null; // Store all API data for year filtering
+
+        // New global variables
+        let currentChartType = 'bar'; // Default chart type
+        let lastChartData = null;     // Store last chart parameters
+        let lastChartFunction = null; // Store last chart function call
+
+        // CBD region list
+        const cbdRegions = [
+            'Carlton',
+            'Docklands',
+            'East Melbourne',
+            'Kensington (Vic.)',
+            'Parkville',
+            'South Yarra - West',
+            'Melbourne CBD - East',
+            'Melbourne CBD - North',
+            'Melbourne CBD - West',
+            'Royal Botanic Gardens Victoria',
+            'Southbank (West) - South Wharf',
+            'Southbank - East',
+            'West Melbourne - Residential'
+        ];
+
+        // Color scale
+        const colorScale = {
+            0: '#f0f0f0',      // No data - Light gray
+            1: '#00a511',      // Low density - Green
+            2: '#fff200',      // Medium density - Yellow
+            3: '#ff6200',      // High density - Orange
+            4: '#ff0000'       // Highest density - Red
+        };
+
+        // Initialize map
+        function initMap() {
+            // Melbourne CBD center coordinates
+            const melbourneCenter = { lat: -37.8140, lng: 144.9630 };
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: melbourneCenter,
+                zoom: 13,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: false, // Disable map type control (satellite button)
+                styles: [
+                    {
+                        featureType: 'all',
+                        stylers: [{ saturation: -80 }]
+                    }
+                ]
+            });
+
+            // Create info window
+            infoWindow = new google.maps.InfoWindow();
+
+            // Load data
+            loadData();
+        }
+
+        // Load all data
+        async function loadData() {
+            try {
+                console.log('Starting to load data...');
+
+                // Load all data files in parallel
+                const [boundariesData, boundsInfoData, apiData] = await Promise.all([
+                    fetch('melbourne_sa2_boundaries.json').then(r => r.json()),
+                    fetch('melbourne_sa2_bounds_info.json').then(r => r.json()),
+                    fetch('melbourne_api_data.json').then(r => r.json())
+                ]);
+
+                console.log('Data loading completed');
+                console.log('Boundary data:', boundariesData.features.length, 'regions');
+                console.log('Boundary info:', Object.keys(boundsInfoData.data).length, 'regions');
+                console.log('API data:', apiData.length, 'regions');
+
+                // Store global API data
+                globalApiData = apiData;
+
+                // Process data
+                processData(boundariesData, boundsInfoData.data, apiData);
+
+                // Populate dropdown options
+                populateRegionSelect(apiData);
+
+                // Populate year selection dropdown
+                populateYearSelect();
+
+                // Populate chart type selector
+                populateChartTypeSelect();
+
+                // Hide loading indicator
+                document.getElementById('loading').style.display = 'none';
+
+            } catch (error) {
+                console.error('Data loading failed:', error);
+                document.getElementById('loading').innerHTML = '<div style="color: red;">Data loading failed, please check network connection</div>';
+            }
+        }
+
+        // Populate year selection dropdowns
+        function populateYearSelect() {
+            const startYearSelect = document.getElementById('start-year-select');
+            const endYearSelect = document.getElementById('end-year-select');
+
+            // Add year options (2001-2021) to both dropdowns
+            for (let year = 2001; year <= 2021; year++) {
+                // Start year options
+                const startOption = document.createElement('option');
+                startOption.value = year;
+                startOption.textContent = year;
+                startYearSelect.appendChild(startOption);
+
+                // End year options
+                const endOption = document.createElement('option');
+                endOption.value = year;
+                endOption.textContent = year;
+                endYearSelect.appendChild(endOption);
+            }
+
+            // Set default values
+            startYearSelect.value = '2001';
+            endYearSelect.value = '2021';
+
+            // Add filter button event listener
+            document.getElementById('filter-button').addEventListener('click', function () {
+                const startYear = parseInt(startYearSelect.value);
+                const endYear = parseInt(endYearSelect.value);
+                const selectedRegion = document.getElementById('region-select').value;
+
+                if (startYear && endYear && startYear <= endYear) {
+                    if (selectedRegion === 'whole_cbd') {
+                        createWholeCBDChart(globalApiData, startYear, endYear);
+                        document.getElementById('chart-title').textContent = `Whole Melbourne CBD population trend (${startYear}-${endYear})`;
+                    } else if (selectedRegion) {
+                        // if a region is selected
+                        const regionData = globalApiData.find(region => region.sa2_name === selectedRegion);
+                        if (regionData) {
+                            createRegionYearRangeChart(selectedRegion, regionData, startYear, endYear);
+                        }
+                    } else {
+                        // if no region selected, show data of all regions
+                        createYearRangeChart(startYear, endYear);
+                    }
+                } else if (startYear > endYear) {
+                    alert('Start year must be less than or equal to end year');
+                }
+            });
+        }
+
+        // Populate chart type selector
+        function populateChartTypeSelect() {
+            const chartTypeSelect = document.getElementById('chart-type-select');
+            chartTypeSelect.addEventListener('change', function () {
+                const newChartType = this.value;
+                if (lastChartData && lastChartFunction) {
+                    // Re-render chart, keeping original data and parameters
+                    currentChartType = newChartType;
+                    lastChartFunction(...lastChartData);
+                }
+            });
+        }
+
+        // Populate region selection dropdown - sorted by 2001 population from low to high
+        function populateRegionSelect(apiData) {
+            const select = document.getElementById('region-select');
+
+            // Sort by 2001 population (from low to high)
+            const sortedRegions = apiData
+                .filter(region => region.y2001 !== undefined)
+                .sort((a, b) => a.y2001 - b.y2001)
+                .map(region => region.sa2_name);
+
+            // Add regions without 2001 data to the end
+            const regionsWithout2001 = apiData
+                .filter(region => region.y2001 === undefined)
+                .map(region => region.sa2_name);
+
+            const allRegions = [...sortedRegions, ...regionsWithout2001];
+
+            allRegions.forEach(regionName => {
+                if (regionName) {
+                    const option = document.createElement('option');
+                    option.value = regionName;
+                    option.textContent = regionName;
+                    select.appendChild(option);
+                }
+            });
+
+            // Add selection event listener
+            select.addEventListener('change', function () {
+                const selectedRegion = this.value;
+                if (selectedRegion) {
+                    // restore default time 
+                    document.getElementById('start-year-select').value = '2001';
+                    document.getElementById('end-year-select').value = '2021';
+                    if (selectedRegion === 'whole_cbd') {
+                        createWholeCBDChart(apiData, 2001, 2021);
+                        document.getElementById('chart-title').textContent = `Whole Melbourne CBD population trend (2001-2021)`;
+                    } else {
+                        const regionData = apiData.find(region => region.sa2_name === selectedRegion);
+                        if (regionData) {
+                            createChart(selectedRegion, regionData);
+                            document.getElementById('chart-title').textContent = `${selectedRegion} Population Growth Trend (2001-2021)`;
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+        // Get chart configuration for full region data (2001-2021)
+        function getChartConfig(regionName, populationData) {
+            const years = [];
+            const populations = [];
+
+            for (let year = 2001; year <= 2021; year++) {
+                const yearKey = `y${year}`;
+                if (populationData[yearKey] !== undefined) {
+                    years.push(year);
+                    populations.push(populationData[yearKey]);
+                }
+            }
+
+            // Return different configurations based on chart type
+            switch (currentChartType) {
+                case 'line':
+                    return {
+                        type: 'line',
+                        data: {
+                            labels: years,
+                            datasets: [{
+                                label: `${regionName} Population`,
+                                data: populations,
+                                borderColor: 'rgba(75, 192, 75, 1)',
+                                backgroundColor: 'rgba(75, 192, 75, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        }
+                    };
+                default: // bar
+                    return {
+                        type: 'bar',
+                        data: {
+                            labels: years,
+                            datasets: [{
+                                label: `${regionName} Population`,
+                                data: populations,
+                                backgroundColor: 'rgba(75, 192, 75, 0.8)',
+                                borderColor: 'rgba(75, 192, 75, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                borderSkipped: false
+                            }]
+                        }
+                    };
+            }
+        }
+
+        // Get chart configuration for specific region and year range
+        function getRegionYearRangeChartConfig(regionName, regionData, startYear, endYear) {
+            const years = [];
+            const populations = [];
+
+            // Get data for the specified year range
+            for (let year = startYear; year <= endYear; year++) {
+                const yearKey = `y${year}`;
+                if (regionData[yearKey] !== undefined) {
+                    years.push(year);
+                    populations.push(regionData[yearKey]);
+                }
+            }
+
+            if (years.length === 0) {
+                return null;
+            }
+
+            // Return different configurations based on chart type
+            switch (currentChartType) {
+                case 'line':
+                    return {
+                        type: 'line',
+                        data: {
+                            labels: years,
+                            datasets: [{
+                                label: `${regionName} Population`,
+                                data: populations,
+                                borderColor: 'rgba(75, 192, 75, 1)',
+                                backgroundColor: 'rgba(75, 192, 75, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        }
+                    };
+                default: // bar
+                    return {
+                        type: 'bar',
+                        data: {
+                            labels: years,
+                            datasets: [{
+                                label: `${regionName} Population`,
+                                data: populations,
+                                backgroundColor: 'rgba(75, 192, 75, 0.8)',
+                                borderColor: 'rgba(75, 192, 75, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                borderSkipped: false
+                            }]
+                        }
+                    };
+            }
+        }
+
+        // Get year range chart configuration
+        function getYearRangeChartConfig(startYear, endYear) {
+            // Get data for the year range
+            const regionsData = globalApiData
+                .filter(region => {
+                    // Check if region has data for both start and end years
+                    const startYearKey = `y${startYear}`;
+                    const endYearKey = `y${endYear}`;
+                    return region[startYearKey] !== undefined && region[endYearKey] !== undefined;
+                })
+                .map(region => {
+                    const startYearKey = `y${startYear}`;
+                    const endYearKey = `y${endYear}`;
+                    const populationChange = region[endYearKey] - region[startYearKey];
+                    const growthRate = ((region[endYearKey] - region[startYearKey]) / region[startYearKey] * 100).toFixed(1);
+
+                    return {
+                        name: region.sa2_name,
+                        startPopulation: region[startYearKey],
+                        endPopulation: region[endYearKey],
+                        populationChange: populationChange,
+                        growthRate: growthRate
+                    };
+                })
+                .sort((a, b) => b.populationChange - a.populationChange); // Sort by population change (highest to lowest)
+
+            if (regionsData.length === 0) {
+                return null;
+            }
+
+            // Return different configurations based on chart type
+            switch (currentChartType) {
+                case 'line':
+                    return {
+                        type: 'line',
+                        data: {
+                            labels: regionsData.map(r => r.name),
+                            datasets: [{
+                                label: `${startYear} Population`,
+                                data: regionsData.map(r => r.startPopulation),
+                                borderColor: 'rgba(75, 192, 75, 1)',
+                                backgroundColor: 'rgba(75, 192, 75, 0.1)',
+                                tension: 0.4,
+                                fill: false
+                            }, {
+                                label: `${endYear} Population`,
+                                data: regionsData.map(r => r.endPopulation),
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                                tension: 0.4,
+                                fill: false
+                            }]
+                        }
+                    };
+                default: // bar
+                    return {
+                        type: 'bar',
+                        data: {
+                            labels: regionsData.map(r => r.name),
+                            datasets: [{
+                                label: `${startYear} Population`,
+                                data: regionsData.map(r => r.startPopulation),
+                                backgroundColor: 'rgba(75, 192, 75, 0.8)',
+                                borderColor: 'rgba(75, 192, 75, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                borderSkipped: false
+                            }, {
+                                label: `${endYear} Population`,
+                                data: regionsData.map(r => r.endPopulation),
+                                backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                                borderColor: 'rgba(99, 132, 255, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                borderSkipped: false
+                            }]
+                        }
+                    };
+            }
+        }
+
+        // Create year range chart - display population comparison across all regions for a year range
+        function createYearRangeChart(startYear, endYear) {
+            // Store current chart parameters
+            lastChartData = [startYear, endYear];
+            lastChartFunction = createYearRangeChart;
+
+            // Get chart configuration
+            const chartConfig = getYearRangeChartConfig(startYear, endYear);
+            if (!chartConfig) {
+                document.getElementById('chart-title').textContent = `No data available for ${startYear}-${endYear}`;
+                return;
+            }
+
+            // Update chart title
+            document.getElementById('chart-title').textContent = `${startYear}-${endYear} Melbourne Regional Population Comparison`;
+
+            // Render chart
+            renderChart(chartConfig);
+        }
+
+        // Create region year range chart - display specific region's population trend for a year range
+        function createRegionYearRangeChart(regionName, regionData, startYear, endYear) {
+            // Store current chart parameters
+            lastChartData = [regionName, regionData, startYear, endYear];
+            lastChartFunction = createRegionYearRangeChart;
+
+            // Get chart configuration
+            const chartConfig = getRegionYearRangeChartConfig(regionName, regionData, startYear, endYear);
+            if (!chartConfig) {
+                document.getElementById('chart-title').textContent = `No data available for ${regionName} (${startYear}-${endYear})`;
+                return;
+            }
+
+            // Update chart title
+            document.getElementById('chart-title').textContent = `${regionName} Population Trend (${startYear}-${endYear})`;
+
+            // Render chart
+            renderChart(chartConfig);
+        }
+
+        // Create single region chart - supports multiple chart types
+        function createChart(regionName, populationData) {
+            // Store current chart parameters
+            lastChartData = [regionName, populationData];
+            lastChartFunction = createChart;
+
+            // Get chart configuration
+            const chartConfig = getChartConfig(regionName, populationData);
+
+            // Render chart
+            renderChart(chartConfig);
+        }
+
+        // Universal chart rendering function
+        function renderChart(chartConfig) {
+            const ctx = document.getElementById('population-chart').getContext('2d');
+
+            // Destroy existing chart
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            // Create new chart
+            currentChart = new Chart(ctx, {
+                ...chartConfig,
+                options: getChartOptions(chartConfig.type)
+            });
+        }
+
+        // Get chart options configuration
+        function getChartOptions(chartType) {
+            const baseOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: false },
+                    legend: {
+                        display: true,
+                        labels: { font: { size: 12 }, color: '#333' }
+                    }
+                }
+            };
+
+            // Add specific options based on chart type
+            if (chartType === 'bar' || chartType === 'line') {
+                baseOptions.scales = {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Population (number of person)',
+                            font: { weight: 'bold' },
+                            color: '#333'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Year',
+                            font: { weight: 'bold' },
+                            color: '#333'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.1)' },
+                        ticks: { maxRotation: 45, minRotation: 0 }
+                    }
+                };
+            }
+
+            return baseOptions;
+        }
+
+        // Process data
+        function processData(boundariesData, boundsInfo, apiData) {
+            // Create population data mapping (only includes CBD regions)
+            const populationMap = {};
+            apiData.forEach(region => {
+                if (region.sa2_name && region.y2021 !== undefined && cbdRegions.includes(region.sa2_name)) {
+                    populationMap[region.sa2_name] = {
+                        population: region.y2021,
+                        area: region.area_km2,
+                        density: region.y2021 / region.area_km2 // Calculate population density
+                    };
+                }
+            });
+
+            console.log('CBD region count:', Object.keys(populationMap).length);
+            console.log('CBD regions:', Object.keys(populationMap));
+
+            // Calculate population density range
+            const densities = Object.values(populationMap).map(r => r.density);
+            const minDensity = Math.min(...densities);
+            const maxDensity = Math.max(...densities);
+            const range = maxDensity - minDensity;
+
+            console.log('Population density range:', minDensity.toFixed(2), 'to', maxDensity.toFixed(2), 'people/km²');
+
+            // Only create polygons for CBD regions
+            boundariesData.features.forEach(feature => {
+                const sa2Name = feature.properties.SA2_NAME21;
+                if (sa2Name && cbdRegions.includes(sa2Name) && boundsInfo[sa2Name]) {
+                    createSA2Polygon(feature, sa2Name, populationMap, minDensity, range);
+                }
+            });
+
+            console.log('CBD map rendering completed');
+        }
+
+        // Create SA2 region polygon
+        function createSA2Polygon(feature, sa2Name, populationMap, minDensity, range) {
+            // Get boundary coordinates
+            const bounds = feature.geometry.coordinates[0];
+            const path = bounds.map(coord => ({
+                lat: coord[1],
+                lng: coord[0]
+            }));
+
+            // Determine color
+            let color = colorScale[0]; // Default light gray
+            let population = 0;
+            let area = 0;
+            let density = 0;
+
+            if (populationMap[sa2Name]) {
+                population = populationMap[sa2Name].population;
+                area = populationMap[sa2Name].area;
+                density = populationMap[sa2Name].density;
+
+                // Calculate color level based on population density (0-4)
+                if (range > 0) {
+                    const normalized = (density - minDensity) / range;
+                    if (normalized <= 0.25) color = colorScale[1];
+                    else if (normalized <= 0.5) color = colorScale[2];
+                    else if (normalized <= 0.75) color = colorScale[3];
+                    else color = colorScale[4];
+                }
+            }
+
+            // Create polygon
+            const polygon = new google.maps.Polygon({
+                paths: path,
+                strokeColor: '#666',
+                strokeOpacity: 0.3,
+                strokeWeight: 1,
+                fillColor: color,
+                fillOpacity: 0.7,
+                map: map
+            });
+
+            // Add mouse events
+            polygon.addListener('mouseover', function () {
+                polygon.setOptions({
+                    strokeWeight: 2,
+                    strokeOpacity: 0.8
+                });
+                showInfoPanel(sa2Name, population, area, density);
+            });
+
+            polygon.addListener('mouseout', function () {
+                polygon.setOptions({
+                    strokeWeight: 1,
+                    strokeOpacity: 0.3
+                });
+                hideInfoPanel();
+            });
+
+            polygon.addListener('click', function () {
+                showInfoWindow(sa2Name, population, area, density, polygon);
+            });
+        }
+
+        // Show info panel
+        function showInfoPanel(sa2Name, population, area, density) {
+            const panel = document.getElementById('info-panel');
+            document.getElementById('region-name').textContent = sa2Name;
+            document.getElementById('population').textContent = population > 0 ? population.toLocaleString() + ' people' : 'No data';
+            document.getElementById('area').textContent = area > 0 ? area.toFixed(1) + ' km²' : 'No data';
+            document.getElementById('density').textContent = density > 0 ? density.toFixed(1) + ' people/km²' : 'No data';
+            panel.style.display = 'block';
+        }
+
+        // Hide info panel
+        function hideInfoPanel() {
+            document.getElementById('info-panel').style.display = 'none';
+        }
+
+        // Show info window
+        function showInfoWindow(sa2Name, population, area, density, polygon) {
+            const content = `
+                <div style="padding: 10px; min-width: 200px;">
+                    <h4 style="margin: 0 0 10px 0; color: #333;">${sa2Name}</h4>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Population:</strong> ${population > 0 ? population.toLocaleString() + ' people' : 'No data'}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Area:</strong> ${area > 0 ? area.toFixed(1) + ' km²' : 'No data'}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Population Density:</strong> ${density > 0 ? density.toFixed(1) + ' people/km²' : 'No data'}
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-top: 10px;">
+                        Click on other map areas to view detailed information
+                    </div>
+                </div>
+            `;
+
+            infoWindow.setContent(content);
+            infoWindow.setPosition(polygon.getPath().getArray()[0]);
+            infoWindow.open(map);
+        }
+
+        // Create Whole Melbourne CBD chart
+        function createWholeCBDChart(apiData, startYear = 2001, endYear = 2021) {
+            const cbdRegions = [
+                'Carlton',
+                'Docklands',
+                'East Melbourne',
+                'Kensington (Vic.)',
+                'Parkville',
+                'South Yarra - West',
+                'Melbourne CBD - East',
+                'Melbourne CBD - North',
+                'Melbourne CBD - West',
+                'Royal Botanic Gardens Victoria',
+                'Southbank (West) - South Wharf',
+                'Southbank - East',
+                'West Melbourne - Residential'
+            ];
+            const years = [];
+            const populations = [];
+            for (let year = startYear; year <= endYear; year++) {
+                let sum = 0;
+                cbdRegions.forEach(regionName => {
+                    const region = apiData.find(r => r.sa2_name === regionName);
+                    if (region && region[`y${year}`] !== undefined) {
+                        sum += region[`y${year}`];
+                    }
+                });
+                years.push(year);
+                populations.push(sum);
+            }
+            // generate chart
+            let datasetConfig = {
+                label: 'Whole Melbourne CBD Population',
+                data: populations,
+                borderColor: 'rgba(75, 192, 75, 1)',
+                backgroundColor: 'rgba(75, 192, 75, 0.8)',
+                tension: 0.4,
+                fill: currentChartType === 'line',
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false
+            };
+            if (currentChartType === 'line') {
+                datasetConfig.backgroundColor = 'rgba(75, 192, 75, 0.1)';
+            }
+            const chartConfig = {
+                type: currentChartType,
+                data: {
+                    labels: years,
+                    datasets: [datasetConfig]
+                },
+                options: getChartOptions(currentChartType)
+            };
+            lastChartData = [apiData, startYear, endYear];
+            lastChartFunction = createWholeCBDChart;
+            renderChart(chartConfig);
+        }
+
+        // Initialize after page loads
+        window.addEventListener('load', initMap);
+    </script>
+</body>
+
+</html>

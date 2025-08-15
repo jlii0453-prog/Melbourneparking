@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Melbourne CBD Population Density Heatmap</title>
 
     <style>
@@ -22,6 +23,7 @@
         .container {
             display: flex;
             height: 100vh;
+            position: relative;
         }
 
         #map {
@@ -29,6 +31,7 @@
             /* 2/3 width */
             height: 100%;
             background-color: #f0f0f0;
+            position: relative;
         }
 
         .chart-section {
@@ -154,7 +157,7 @@
         }
 
         /* Comprehensive responsive design */
-        
+
         /* Large tablets and small desktops */
         @media (max-width: 1200px) {
             .container {
@@ -171,11 +174,11 @@
                 height: 40vh;
                 padding: 20px;
             }
-            
+
             .control-panel {
                 padding: 15px;
             }
-            
+
             .year-filter {
                 padding: 15px;
             }
@@ -201,94 +204,95 @@
                 min-height: 50vh;
                 padding: 15px;
             }
-            
+
             .control-panel {
                 padding: 15px;
                 margin-bottom: 10px;
             }
-            
+
             .control-panel label {
                 font-size: 13px;
                 margin-bottom: 6px;
             }
-            
+
             .control-panel select {
                 padding: 10px 12px;
                 font-size: 13px;
                 margin-bottom: 15px;
             }
-            
+
             .year-filter {
                 padding: 15px;
                 margin-bottom: 10px;
             }
-            
+
             .year-filter h4 {
                 font-size: 13px;
             }
-            
+
             .year-controls select {
                 padding: 8px 10px;
                 font-size: 13px;
             }
-            
+
             .year-controls button {
                 padding: 10px 20px;
                 font-size: 13px;
             }
-            
+
             .chart-title {
                 padding: 12px;
                 font-size: 13px;
                 margin-bottom: 8px;
             }
-            
+
             .chart-container {
                 padding: 15px;
             }
-            
+
             .legend-container {
                 bottom: 15px;
                 left: 15px;
                 position: absolute;
+                z-index: 9999;
             }
-            
+
             #legend {
                 padding: 12px;
                 min-width: 180px;
             }
-            
+
             #legend h3 {
                 font-size: 11px;
                 margin-bottom: 12px;
             }
-            
+
             .legend-item {
                 margin-bottom: 3px;
             }
-            
+
             .legend-color {
                 width: 18px;
                 height: 18px;
                 margin-right: 8px;
             }
-            
+
             .legend-label {
                 font-size: 11px;
             }
-            
+
             #info-panel {
                 top: 15px;
                 left: 15px;
                 padding: 12px;
                 max-width: 250px;
             }
-            
+
             #info-panel h4 {
                 font-size: 13px;
                 margin-bottom: 8px;
             }
-            
+
             .info-row {
                 margin-bottom: 4px;
                 font-size: 12px;
@@ -315,105 +319,106 @@
                 min-height: 55vh;
                 padding: 10px;
             }
-            
+
             .control-panel {
                 padding: 12px;
                 margin-bottom: 8px;
             }
-            
+
             .control-panel label {
                 font-size: 12px;
                 margin-bottom: 5px;
             }
-            
+
             .control-panel select {
                 padding: 8px 10px;
                 font-size: 12px;
                 margin-bottom: 12px;
             }
-            
+
             .year-filter {
                 padding: 12px;
                 margin-bottom: 8px;
             }
-            
+
             .year-filter h4 {
                 font-size: 12px;
                 margin-bottom: 8px;
             }
-            
+
             .year-controls {
                 gap: 10px;
                 margin-bottom: 10px;
             }
-            
+
             .year-controls select {
                 padding: 8px 10px;
                 font-size: 12px;
             }
-            
+
             .year-controls button {
                 padding: 8px 16px;
                 font-size: 12px;
             }
-            
+
             .chart-title {
                 padding: 10px;
                 font-size: 12px;
                 margin-bottom: 6px;
             }
-            
+
             .chart-container {
                 padding: 10px;
             }
-            
+
             .legend-container {
                 bottom: 10px;
                 left: 10px;
                 position: absolute;
+                z-index: 9999;
             }
-            
+
             #legend {
                 padding: 10px;
                 min-width: 160px;
             }
-            
+
             #legend h3 {
                 font-size: 10px;
                 margin-bottom: 10px;
             }
-            
+
             .legend-item {
                 margin-bottom: 2px;
             }
-            
+
             .legend-color {
                 width: 16px;
                 height: 16px;
                 margin-right: 6px;
             }
-            
+
             .legend-label {
                 font-size: 10px;
             }
-            
+
             #info-panel {
                 top: 10px;
                 left: 10px;
                 padding: 10px;
                 max-width: 200px;
             }
-            
+
             #info-panel h4 {
                 font-size: 12px;
                 margin-bottom: 6px;
             }
-            
+
             .info-row {
                 margin-bottom: 3px;
                 font-size: 11px;
             }
-            
+
             .back-button {
                 top: 10px;
                 left: 10px;
@@ -442,105 +447,106 @@
                 min-height: 60vh;
                 padding: 8px;
             }
-            
+
             .control-panel {
                 padding: 10px;
                 margin-bottom: 6px;
             }
-            
+
             .control-panel label {
                 font-size: 11px;
                 margin-bottom: 4px;
             }
-            
+
             .control-panel select {
                 padding: 6px 8px;
                 font-size: 11px;
                 margin-bottom: 10px;
             }
-            
+
             .year-filter {
                 padding: 10px;
                 margin-bottom: 6px;
             }
-            
+
             .year-filter h4 {
                 font-size: 11px;
                 margin-bottom: 6px;
             }
-            
+
             .year-controls {
                 gap: 8px;
                 margin-bottom: 8px;
             }
-            
+
             .year-controls select {
                 padding: 6px 8px;
                 font-size: 11px;
             }
-            
+
             .year-controls button {
                 padding: 6px 12px;
                 font-size: 11px;
             }
-            
+
             .chart-title {
                 padding: 8px;
                 font-size: 11px;
                 margin-bottom: 5px;
             }
-            
+
             .chart-container {
                 padding: 8px;
             }
-            
+
             .legend-container {
                 bottom: 8px;
                 left: 8px;
                 position: absolute;
+                z-index: 9999;
             }
-            
+
             #legend {
                 padding: 8px;
                 min-width: 140px;
             }
-            
+
             #legend h3 {
                 font-size: 9px;
                 margin-bottom: 8px;
             }
-            
+
             .legend-item {
                 margin-bottom: 2px;
             }
-            
+
             .legend-color {
                 width: 14px;
                 height: 14px;
                 margin-right: 5px;
             }
-            
+
             .legend-label {
                 font-size: 9px;
             }
-            
+
             #info-panel {
                 top: 8px;
                 left: 8px;
                 padding: 8px;
                 max-width: 180px;
             }
-            
+
             #info-panel h4 {
                 font-size: 11px;
                 margin-bottom: 5px;
             }
-            
+
             .info-row {
                 margin-bottom: 2px;
                 font-size: 10px;
             }
-            
+
             .back-button {
                 top: 8px;
                 left: 8px;
@@ -566,41 +572,44 @@
                 height: 100%;
                 padding: 15px;
             }
-            
+
             .control-panel {
                 padding: 10px;
                 margin-bottom: 8px;
             }
-            
+
             .year-filter {
                 padding: 10px;
                 margin-bottom: 8px;
             }
-            
+
             .chart-title {
                 padding: 8px;
                 margin-bottom: 5px;
             }
-            
+
             .chart-container {
                 padding: 10px;
             }
-            
+
             .legend-container {
                 bottom: 15px;
                 left: 15px;
                 position: absolute;
+                z-index: 9999;
             }
         }
 
         /* High DPI displays */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        @media (-webkit-min-device-pixel-ratio: 2),
+        (min-resolution: 192dpi) {
+
             .control-panel select,
             .year-controls select,
             .year-controls button {
                 border-width: 1px;
             }
-            
+
             .chart-container {
                 border-width: 1px;
             }
@@ -608,24 +617,25 @@
 
         /* Print styles */
         @media print {
+
             .back-button,
             #legend,
             #info-panel,
             .loading {
                 display: none !important;
             }
-            
+
             .container {
                 flex-direction: column;
                 height: auto;
             }
-            
+
             #map {
                 width: 100%;
                 height: 400px;
                 page-break-inside: avoid;
             }
-            
+
             .chart-section {
                 width: 100%;
                 height: auto;
@@ -636,17 +646,19 @@
 
         /* Touch-friendly improvements */
         @media (hover: none) and (pointer: coarse) {
+
             .control-panel select,
             .year-controls select,
             .year-controls button {
-                min-height: 44px; /* iOS recommended touch target size */
+                min-height: 44px;
+                /* iOS recommended touch target size */
             }
-            
+
             .back-button {
                 min-height: 44px;
                 min-width: 44px;
             }
-            
+
             #legend,
             #info-panel {
                 min-height: 44px;
@@ -655,6 +667,7 @@
 
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
+
             .control-panel,
             .year-filter,
             .chart-title,
@@ -663,36 +676,36 @@
                 color: #e2e8f0;
                 border-color: #4a5568;
             }
-            
+
             .control-panel label,
             .year-filter h4,
             .chart-title {
                 color: #e2e8f0;
             }
-            
+
             .control-panel select,
             .year-controls select {
                 background: #4a5568;
                 color: #e2e8f0;
                 border-color: #718096;
             }
-            
+
             .year-controls button {
                 background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
             }
-            
+
             #legend,
             #info-panel {
                 background: #2d3748;
                 color: #e2e8f0;
                 border-color: #4a5568;
             }
-            
+
             #legend h3,
             #info-panel h4 {
                 color: #e2e8f0;
             }
-            
+
             .legend-label,
             .info-label {
                 color: #cbd5e0;
@@ -701,13 +714,14 @@
 
         /* Reduced motion for accessibility */
         @media (prefers-reduced-motion: reduce) {
+
             .control-panel select,
             .year-controls select,
             .year-controls button,
             .back-button {
                 transition: none;
             }
-            
+
             .control-panel select:focus,
             .year-controls select:focus,
             .year-controls button:hover {
@@ -871,29 +885,25 @@
             justify-content: center;
         }
 
-        #legend {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            min-width: 200px;
-        }
-
-        /* Legend container - positioned relative to map container */
+        /* Legend container - positioned relative to container */
         .legend-container {
             position: absolute;
             bottom: 20px;
             left: 20px;
-            z-index: 1000;
+            z-index: 9999;
         }
 
         /* Ensure map container has relative positioning for legend */
         #map {
             position: relative;
+        }
+
+        #legend {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
         }
 
         #legend h3 {
@@ -972,30 +982,31 @@
 
     <div class="container">
         <div id="map">
-            <!-- Legend fixed to map container -->
-            <div class="legend-container">
-                <div id="legend">
-                    <h3>Population Density (people/km²)</h3>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #f0f0f0;"></div>
-                        <div class="legend-label">No Data</div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #00a511;"></div>
-                        <div class="legend-label">Low Density</div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #fff200;"></div>
-                        <div class="legend-label">Medium Density</div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #ff6200;"></div>
-                        <div class="legend-label">High Density</div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #ff0000;"></div>
-                        <div class="legend-label">Highest Density</div>
-                    </div>
+            <!-- Map will be rendered here by Google Maps -->
+        </div>
+        <!-- Legend positioned outside map container -->
+        <div class="legend-container">
+            <div id="legend">
+                <h3>Population Density (people/km²)</h3>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f0f0f0;"></div>
+                    <div class="legend-label">No Data</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #00a511;"></div>
+                    <div class="legend-label">Low Density</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #fff200;"></div>
+                    <div class="legend-label">Medium Density</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ff6200;"></div>
+                    <div class="legend-label">High Density</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ff0000;"></div>
+                    <div class="legend-label">Highest Density</div>
                 </div>
             </div>
         </div>
